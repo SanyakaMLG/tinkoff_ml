@@ -13,7 +13,7 @@ def formatting(filepath):
                 text += line
 
     text = text.lower()
-    text = re.sub(r'[^a-zA-Z0-9а-яА-ЯёЁ\s]', '', text)
+    text = re.sub(r'[^a-z0-9а-яё\s]', '', text)
     text = re.sub(r'\n', ' ', text)
     text = text.split()
 
