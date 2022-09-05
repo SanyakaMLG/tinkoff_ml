@@ -2,9 +2,10 @@ import pickle
 import argparse
 import os
 import re
+import sys
 
 
-def formatting(filepath):
+def transform_file_to_text(filepath):
     text = ""
 
     with open(filepath, "r", encoding='utf-8') as f:
@@ -12,6 +13,22 @@ def formatting(filepath):
             if line != '\n':
                 text += line
 
+    return text
+
+
+def input_from_stdin():
+    text = ""
+    print('Please input text to train model or \'Exit\':')
+    for line in sys.stdin:
+        if 'Exit' == line.rstrip():
+            break
+        print('Please input text to train model or \'Exit\':')
+        text += line
+
+    return text
+
+
+def tokenize(text):
     text = text.lower()
     text = re.sub(r'[^a-z0-9а-яё\s]', '', text)
     text = re.sub(r'\n', ' ', text)
@@ -20,35 +37,47 @@ def formatting(filepath):
     return text
 
 
-def tokenize(dictionary, text):
+def train(dictionary, text):
     for i in range(len(text) - 1):
         if text[i] not in dictionary:
             dictionary[text[i]] = []
+        else:
+            dictionary[text[i]].append(text[i+1])
 
-        dictionary[text[i]].append(text[i+1])
+        if i > 0 and (text[i-1], text[i]) not in dictionary:
+            dictionary[(text[i-1], text[i])] = []
+        elif i > 0:
+            dictionary[(text[i-1], text[i])].append(text[i+1])
+
+        if i > 1 and (text[i-2], text[i-1], text[i]) not in dictionary:
+            dictionary[(text[i-2], text[i-1], text[i])] = []
+        elif i > 1:
+            dictionary[(text[i-2], text[i-1], text[i])].append(text[i+1])
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input-dir", dest="data_path", required=True, help="Directory with files to train model")
+parser.add_argument("--input-dir", dest="data_path", required=False, help="Directory with files to train model")
 parser.add_argument("--model", dest="model_path", required=True, help="Path to file with model")
 
 args = parser.parse_args()
 
-data_path = args.data_path
 model_path = args.model_path
-
-if not os.path.exists(data_path) or not os.path.isdir(data_path):
-    raise OSError("Directory with data for train model is not found")
 
 if not os.path.isfile(model_path):
     raise OSError("Model not found")
 
 data = {}
 
-for root, dirs, files in os.walk(data_path):
-    for file in files:
-        if file.endswith(".txt"):
-            tokenize(data, formatting(os.path.join(root, file)))
+if args.data_path is not None:
+    data_path = args.data_path
+    for root, dirs, files in os.walk(data_path):
+        for file in files:
+            if file.endswith(".txt"):
+                train(data, tokenize(transform_file_to_text(os.path.join(root, file))))
+else:
+    text = input_from_stdin()
+    train(data, tokenize(text))
+    print(repr(text))
 
-with open(model_path, "r+b") as f:
+with open(model_path, "w+b") as f:
     pickle.dump(data, f)
