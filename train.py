@@ -40,17 +40,17 @@ def tokenize(text):
 def train(dictionary, text):
     for i in range(len(text) - 1):
         if text[i] not in dictionary:
-            dictionary[text[i]] = []
+            dictionary[text[i]] = [text[i+1]]
         else:
             dictionary[text[i]].append(text[i+1])
 
         if i > 0 and (text[i-1], text[i]) not in dictionary:
-            dictionary[(text[i-1], text[i])] = []
+            dictionary[(text[i-1], text[i])] = [text[i+1]]
         elif i > 0:
             dictionary[(text[i-1], text[i])].append(text[i+1])
 
         if i > 1 and (text[i-2], text[i-1], text[i]) not in dictionary:
-            dictionary[(text[i-2], text[i-1], text[i])] = []
+            dictionary[(text[i-2], text[i-1], text[i])] = [text[i+1]]
         elif i > 1:
             dictionary[(text[i-2], text[i-1], text[i])].append(text[i+1])
 
