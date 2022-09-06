@@ -77,7 +77,6 @@ if args.data_path is not None:
 else:
     text = input_from_stdin()
     train(data, tokenize(text))
-    print(repr(text))
 
 with open(model_path, "w+b") as f:
     pickle.dump(data, f)
