@@ -29,6 +29,7 @@ def input_from_stdin():
 
 
 def tokenize(text):
+    # TODO не убирать дефис в слове (например: где-нибудь)
     text = text.lower()
     text = re.sub(r'[^a-z0-9а-яё\s]', '', text)
     text = re.sub(r'\n', ' ', text)
