@@ -18,9 +18,42 @@ with open(model_path, "rb") as f:
 if args.prefix is not None:
     ans = args.prefix.split()
 else:
-    ans = [random.choice(list(data.keys()))]
+    ans = [random.choice(list(filter(lambda x: isinstance(x, str), list(data.keys()))))]
 
-for i in range(length-1):
-    ans.append(random.choice(data[ans[i]]))
+i = len(ans) - 1
+
+while len(ans) < 2:
+    if ans[i] in data:
+        ans.append(random.choice(data[ans[i]]))
+    else:
+        ans.append(random.choice(list(filter(lambda x: isinstance(x, str), list(data.keys())))))
+    i += 1
+
+while len(ans) < 3:
+    bigram = (ans[i-1], ans[i])
+    if bigram in data:
+        ans.append(random.choice(data[bigram]))
+    elif ans[i] in data:
+        ans.append(random.choice(data[ans[i]]))
+    else:
+        ans.append(random.choice(list(filter(lambda x: isinstance(x, str), list(data.keys())))))
+
+    i += 1
+
+while i < length-1:
+    trigram = (ans[i-2], ans[i-1], ans[i])
+    bigram = (ans[i-1], ans[i])
+
+    if trigram in data:
+        ans.append(random.choice(data[trigram]))
+    elif bigram in data:
+        ans.append(random.choice(data[bigram]))
+    elif ans[i] in data:
+        ans.append(random.choice(data[ans[i]]))
+    else:
+        ans.append(random.choice(list(filter(lambda x: isinstance(x, str), list(data.keys())))))
+
+    i += 1
+
 
 print(' '.join(ans))
